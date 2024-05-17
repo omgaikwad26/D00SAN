@@ -1,6 +1,6 @@
 # Table of Contents
 
-Camera Calibration
+## Camera Calibration
 Direct Linear Theorem (DLT) 
 
 05/13/2024
