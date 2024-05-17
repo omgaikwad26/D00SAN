@@ -1,4 +1,7 @@
-# D00SAN
+# Table of Contents
+
+Camera Calibration
+Direct Linear Theorem (DLT) 
 
 05/13/2024
 The camera captures the image of the workspace
