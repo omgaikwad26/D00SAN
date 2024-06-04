@@ -5,37 +5,77 @@ import math
 import time
 from scipy.optimize import fsolve
 import socket
+import numpy as np
+import matplotlib.pyplot as plt
 
-#Camera Calibration         
+# Global variables for calibration
+click_count = 0
+click_coordinates = []
+
 def get_mouse_click(event, x, y, flags, param):
     global click_count
     global click_coordinates
     if event == cv2.EVENT_LBUTTONDOWN:
-        click_coordinates.append((x,y))
-        click_count +=1
-        print(f'Click {click_count}: (x,y) = ({x}, {y})')
+        click_coordinates.append((x, y))
+        click_count += 1
+        print(f'Click {click_count}: (x, y) = ({x}, {y})')
         if click_count == 4:
-            cv2.setMouseCallback('Calibration Feed', lambda *args:None) #Disables mouse callback after 4 clicks
+            cv2.setMouseCallback('Corners Marked', lambda *args: None)  # Disables mouse callback after 4 clicks
 
-click_count = 0
-click_coordinates = []
-
+# Capture the video feed
 cap = cv2.VideoCapture(0)
 cap.set(3, 1280)
 cap.set(4, 720)
-cv2.namedWindow('Calibration Feed')
-cv2.setMouseCallback('Calibration Feed', get_mouse_click)
-#Camera Calibration, need 4 clicks
+
+# Read the first frame
+ret, frame = cap.read()
+if not ret:
+    print("Failed to capture image")
+    cap.release()
+    exit()
+
+# Detect corners in the frame
+hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+boundaries = [
+    ([80, 50, 50], [130, 255, 255]),  # blue
+]
+
+# Loop over the boundaries
+for (lower, upper) in boundaries:
+    # Create NumPy arrays from the boundaries
+    lower = np.array(lower, dtype="uint8")
+    upper = np.array(upper, dtype="uint8")
+    # Find the colors within the specified boundaries and apply the mask
+    mask = cv2.inRange(hsv, lower, upper)
+    output = cv2.bitwise_and(frame, frame, mask=mask)
+
+# Convert the input image into grayscale color space
+operatedImage = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
+# Modify the data type setting to 32-bit floating point
+operatedImage = np.float32(operatedImage)
+
+corners = cv2.goodFeaturesToTrack(operatedImage, maxCorners=40, qualityLevel=0.1, minDistance=10, blockSize=7)
+
+# Ensure corners are detected
+if corners is not None:
+    corners = np.int0(corners)
+    for i in corners:
+        x, y = i.ravel()
+        cv2.circle(frame, (x, y), 10, (0, 255, 0), -1)
+
+# Show the final image with corners marked
+cv2.imshow("Corners Marked", frame)
+cv2.setMouseCallback('Corners Marked', get_mouse_click)
+
+# Wait until 4 points are clicked or 'q' is pressed
 while True:
-    ret, frame = cap.read()
-    cv2.imshow('Calibration Feed', frame)
     if cv2.waitKey(1) & 0xFF == ord('q') or click_count == 4:
         break
 
 cap.release()
 cv2.destroyAllWindows()
 
-print(click_coordinates)                #the points displayed represent the calibration points
+print(click_coordinates)  # the points displayed represent the calibration points
 
 
 
