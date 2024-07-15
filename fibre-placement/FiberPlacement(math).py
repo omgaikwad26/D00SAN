@@ -7,7 +7,6 @@ from scipy.optimize import fsolve
 import socket
 import numpy as np
 import matplotlib.pyplot as plt
-import math
 
 arena_coordinates = {
     'bottom_left': (945, 129),
@@ -206,10 +205,23 @@ def plot_fiber_paths(paths):
         start, end = edge
         ax.plot([start[0], end[0]], [start[1], end[1]], 'k-')
     """
+    """
     # Plot the fiber paths
     for path in paths:
         start, end = path
         ax.plot([start[0], end[0]], [start[1], end[1]], 'b-')
+    """
+    # Plot the fiber paths
+    for i, path in enumerate(paths):
+        start, end = path
+        if i % 2 != 0:
+            start, end = end, start
+            color = 'g-'
+        else:
+            color = 'b-'
+
+        ax.plot([start[0],end[0]], [start[1],end[1]], color)
+        print (start, end)
     
     ax.set_aspect('equal')
     ax.set_xlim(arena_coordinates['bottom_left'][0] + 1, arena_coordinates['bottom_right'][0] - 1)
