@@ -61,3 +61,17 @@ while True:
         payloads = posx(0,0,height,0,0,0)
         movel(payloads, v=15, a=30, mod=DR_MV_MOD_REL)
         client_socket_write(sock, b"moved up")
+    elif command == b"movedown":
+        height = payloads[0]
+        payloads = posx(0,0,height,0,0,0)
+        movel(payloads, v=15, a=30, mod=DR_MV_MOD_REL)
+        client_socket_write(sock, b"moved down")
+    elif command == b"rotate gripper":
+        distance = payloads[0]
+        payloads = posx(0,0,0,0,0,distance)
+        movel(payloads, v=15, a=30, mod=DR_MV_MOD_REL)
+        client_socket_write(sock, b"rotate gripper")
+    else:
+        client_socket_write(sock, b"command not processed")
+        
+    # Process command and payloads here

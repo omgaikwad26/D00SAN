@@ -184,6 +184,7 @@ def generate_fiber_paths(angle_repetitions, spacing=30):
         for _ in range(repetitions):
             paths.extend(generate_path_lines(angle, spacing))
     
+    print ("Paths", paths)
     return paths
 
 # Function to plot the paths
