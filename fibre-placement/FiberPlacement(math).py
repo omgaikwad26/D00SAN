@@ -167,9 +167,6 @@ def generate_path_lines(angle, spacing=20):
                     x1 = x0 + ((y1 - y0) / tan_iota)
                     lines.append(((x0, y0), (x1, y1)))
                     print ("L-T", angle, (x0,y0), (x1,y1))
-                
-
-                #print (angle, (x0,y0))
             
     return lines
 
@@ -222,7 +219,7 @@ def plot_fiber_paths(paths):
             color = 'b-'
 
         ax.plot([start[0],end[0]], [start[1],end[1]], color)
-        print (start, end)
+        print ("path", start, end)
     
     ax.set_aspect('equal')
     ax.set_xlim(arena_coordinates['bottom_left'][0] + 1, arena_coordinates['bottom_right'][0] - 1)
@@ -241,6 +238,9 @@ def plot_fiber_paths(paths):
 angle_repetitions = [(0, 1), (20, 1), (160, 1), (90, 1)]
 spacing = 30
 fiber_paths = generate_fiber_paths(angle_repetitions, spacing)
+
+numberOfLines = len(fiber_paths)
+print("number of lines", numberOfLines)
 
 # Plot the generated paths
 plot_fiber_paths(fiber_paths)
