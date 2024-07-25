@@ -8,19 +8,13 @@ import socket
 import numpy as np
 import matplotlib.pyplot as plt
 
-arena_coordinates = {
-    'bottom_left': (945, 129),
-    'bottom_right': (481, 119),
-    'top_left':  (1187, 683),
-    'top_right': (110, 574)
-}
 
 # Assigning the coordinates to the paper_coordinates dictionary
 paper_coordinates = {
-    'bottom_left': (760, 220),
-    'bottom_right': (580, 220),
-    'top_left':  (760, 380),
-    'top_right': (580, 380)
+    'bottom_left': (0, 0),
+    'bottom_right': (215.9, 0),
+    'top_left':  (215.9, 279.4),
+    'top_right': (0, 279.4)
 }
 
 print (paper_coordinates)
@@ -222,8 +216,8 @@ def plot_fiber_paths(paths):
         print ("path", start, end)
     
     ax.set_aspect('equal')
-    ax.set_xlim(arena_coordinates['bottom_left'][0] + 1, arena_coordinates['bottom_right'][0] - 1)
-    ax.set_ylim(arena_coordinates['bottom_right'][1] - 1, arena_coordinates['top_left'][1] + 1)
+    ax.set_xlim(paper_coordinates['bottom_left'][0] + 1, paper_coordinates['bottom_right'][0] - 1)
+    ax.set_ylim(paper_coordinates['bottom_right'][1] - 1, paper_coordinates['top_left'][1] + 1)
 
     plt.title("Fiber Placement Paths")
     plt.xlabel("X Coordinate")

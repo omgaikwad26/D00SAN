@@ -93,10 +93,6 @@ def map(r, s, rspts, xypts, jtpts):
     j = forward_robot(p, jtpts)
     return x, j
 
-
-fileName = input("Enter file name: ")
-coordinates, size = SortingCoordinates(fileName)
-
 """
 1 Starts at bottom left and goes around the corners, 
 5 is in the middle of the bottom side and goes around the sides,
@@ -117,30 +113,31 @@ pt 9:
 
 
 """
-#Mapping Coordinates
+#Mapping Coordinates in mm
+#ptvec = [[a,b] for a, b in click_coordinates]
 ptvec = (
     [0, 0],             #1
-    [404, 0],           #2
-    [404, 404],         #3
-    [0, 404],           #4
-    [202, 0],           #5
-    [404, 202],         #6
-    [202, 404],         #7
-    [0, 202],           #8
+    [107.95, 0],           #2
+    [215.9, 0],         #3
+    [215.9, 139.7],           #4
+    [215.9, 279.4],           #5
+    [107.95, 279.4],         #6
+    [0, 279.4],         #7
+    [0, 139.7],           #8
     [202, 202]          #9
 )
 
 # Actual Coordinates
 xyvec = (
-    [0, 0],
-    [404, 0],
-    [404, 404],
-    [0, 404],
-    [202, 0],
-    [404, 202],
-    [202, 404],
-    [0, 202],
-    [202, 202]
+    [0, 0],             #1
+    [107.95, 0],           #2
+    [215.9, 0],         #3
+    [215.9, 139.7],           #4
+    [215.9, 279.4],           #5
+    [107.95, 279.4],         #6
+    [0, 279.4],         #7
+    [0, 139.7],           #8
+    [202, 202] 
 )
 
 # Joint Angles
@@ -156,6 +153,17 @@ jtvec = (
     [89.76, -44.34, -97.32, 0, -39.27, -1.23]
 )
 
+# Assigning the coordinates to the paper_coordinates dictionary
+paper_coordinates = {
+    'bottom_left': (0, 0),
+    'bottom_right': (215.9, 0),
+    'top_left':  (215.9, 279.4),
+    'top_right': (0, 279.4)
+}
+
+print (paper_coordinates)
+
+# Function to generate path lines based on the angle
 def generate_path_lines(angle, spacing=20):
     """
     Generate path lines for a given angle and spacing.
@@ -181,7 +189,7 @@ def generate_path_lines(angle, spacing=20):
     x_end = x_max 
     y_end = y_max 
 
-    #print ((x_start, y_start), (x_end, y_end))
+    print ((x_start, y_start), (x_end, y_end))
 
     min_dim = min(x_start, y_start)
     max_dim = max(x_end, y_end)
@@ -191,7 +199,7 @@ def generate_path_lines(angle, spacing=20):
         y_coords = np.arange(y_start, y_end, spacing)
 
         for y in y_coords:
-            #print(angle, (x_start, y), (x_end , y))
+            print(angle, (x_start, y), (x_end , y))
             lines.append(((x_start, y), (x_end , y)))
             
     if angle == 90:
@@ -201,7 +209,7 @@ def generate_path_lines(angle, spacing=20):
         #print (angle, x_coords)
 
         for x in x_coords:
-            #print(angle, (x, y_start), (x , y_end))
+            print(angle, (x, y_start), (x , y_end))
             lines.append(((x, y_start), (x , y_end)))
 
     else:
@@ -227,14 +235,14 @@ def generate_path_lines(angle, spacing=20):
                     #bottom to left
                     if y1 <= y_end:
                         lines.append(((x0, y0), (x1, y1)))
-                        #print("B-L",angle, (x0, y0), (x1, y1))
+                        print("B-L",angle, (x0, y0), (x1, y1))
 
                     #Bottom to Top
                     else:
                         y1 = y_end
                         x1 = ((y1 - y0) / tan_angle) + x0
                         lines.append(((x0, y0), (x1, y1)))
-                        #print("B-LT",angle, (x0, y0), (x1, y1))
+                        print("B-LT",angle, (x0, y0), (x1, y1))
                 
                 #Bottom to Right and top
                 elif y1 <= y_start:
@@ -244,13 +252,13 @@ def generate_path_lines(angle, spacing=20):
                     #Bottom to Right 
                     if y1 <= y_end:
                         lines.append(((x0, y0), (x1, y1)))
-                        #print ("B-R",angle, (x1, y1))
+                        print ("B-R",angle, (x1, y1))
 
                     #Bottom to top boundary
                     else:
                         y1 = y_end
                         x1 = (x0 - ((y0 - y1) / tan_iota))
-                        #print("B-RT",angle, (x1, y1))
+                        print("B-RT",angle, (x1, y1))
                         lines.append(((x0, y0), (x1, y1)))
             
             #Starting on right boundary
@@ -267,13 +275,13 @@ def generate_path_lines(angle, spacing=20):
                     x1 = x_end
                     y1 = ((x1 - x0) * tan_angle) + y0
                     lines.append(((x0, y0), (x1, y1)))
-                    #print("R-L",angle, (x0, y0), (x1, y1))
+                    print("R-L",angle, (x0, y0), (x1, y1))
                 
                 #if x0 >= y_min and x1 <= x_end and y_start >= y_start and y_end <= y_end
                 #Right to Top
                 elif y0 >= y_start and y0 <= y_end:
                     lines.append(((x0, y0), (x1, y1)))  
-                    #print("R-T",angle, (x0, y0), (x1, y1))
+                    print("R-T",angle, (x0, y0), (x1, y1))
                 
             # starting on left boundary
             elif x0 > x_end:
@@ -288,7 +296,7 @@ def generate_path_lines(angle, spacing=20):
                 #Left to Right
                 if y1 <= y_end and y0 >= y_start:
                     lines.append(((x0, y0), (x1, y1)))
-                    #print ("L-R", angle, (x0,y0), (x1,y1))
+                    print ("L-R", angle, (x0,y0), (x1,y1))
 
                 
                 #Left to top
@@ -296,10 +304,7 @@ def generate_path_lines(angle, spacing=20):
                     y1 = y_end
                     x1 = x0 + ((y1 - y0) / tan_iota)
                     lines.append(((x0, y0), (x1, y1)))
-                    #print ("L-T", angle, (x0,y0), (x1,y1))
-                
-
-                #print (angle, (x0,y0))
+                    print ("L-T", angle, (x0,y0), (x1,y1))
             
     return lines
 
@@ -317,8 +322,23 @@ def generate_fiber_paths(angle_repetitions, spacing=30):
     print ("Paths", paths)
     return paths
 
-def pathCoordinates(paths):
-    # Determining the start and end of the fiber path lines
+# Function to plot the paths
+def plot_fiber_paths(paths):
+    """
+    Plot the fiber paths on the paper.
+    """
+    """
+    for edge in paper_edges:
+        start, end = edge
+        ax.plot([start[0], end[0]], [start[1], end[1]], 'k-')
+    """
+    """
+    # Plot the fiber paths
+    for path in paths:
+        start, end = path
+        ax.plot([start[0], end[0]], [start[1], end[1]], 'b-')
+    """
+    # Plot the fiber paths
     for i, path in enumerate(paths):
         start, end = path
         if i % 2 != 0:
@@ -327,53 +347,32 @@ def pathCoordinates(paths):
         else:
             color = 'b-'
 
-        print (start, end)
+        ax.plot([start[0],end[0]], [start[1],end[1]], color)
+        print ("path", start, end)
 
 
+# Example usage
+angle_repetitions = [(0, 1), (20, 1), (160, 1), (90, 1)]
+spacing = 30
+fiber_paths = generate_fiber_paths(angle_repetitions, spacing)
+
+numberOfLines = len(fiber_paths)
+print("number of lines", numberOfLines)
+
+# Plot the generated paths
+plot_fiber_paths(fiber_paths)
+
+"""
     bcvec = []  #bvec Start Coordinates
+    startxyvec = [] #starting coordinates
     finaljtvec = []  # Final Joint Angles
     finalxyvec = []  # Final XY Coordinates
     numberOfLines = len(pathCoordinates())
+    intomm = 25.4
     print (numberOfLines)
+"""
 
-
-    for point in coordinates:
-        transformed_point = (
-            float(point[0]) * intomm + intomm/2,
-            float(point[1]) * intomm + intomm/2,
-            float(point[2]) * intomm + intomm/2
-        )
-        voxelCoordinates.append(transformed_point)
-
-    startx = intomm/2
-    starty = 404 - intomm/2
-    bcvec.append([startx, starty])
-
-    """
-    for i in range(numberOfBlocks):
-        if i % 6 == 0:
-            starty -= intomm * 2.5
-            startx = intomm/2
-        else:
-            startx += intomm * 2.5
-        bcvec.append([startx, starty])
-    """
-
-    for i in range(1, numberOfLines, 1):
-        if i % 6 == 0:
-            starty = 404 - intomm/2
-            startx -= intomm * 2.5
-        else:
-            startx -= 1.1 * intomm
-        bcvec.append([startx, starty])
-
-    finalbcvec = []
-
-    for point in bcvec:
-        x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
-        finalbcvec.append([round(num, 2) for num in j])
-
-
+"""
 #server is opened which connects directly to the robot 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = "192.168.137.50"
@@ -387,13 +386,6 @@ def received_message():
     recieved_data = client_socket.recv(1024)
     print(recieved_data)
 
-"""
-Robot goes to the first start position
-moves down
-draws the first line
-moves up
-Repeat 1-4
-"""
 closeGripper = b"close gripper"
 openGripper = b"open gripper"
 moveupvar = b"40" #move up variable
@@ -447,13 +439,13 @@ for i in range(numberOfLines):
     moveToStart = [b'moveto', finalbcvec[i]]          
     moveToEnd = [b'moveto', finaljtvec[i]]
 
-    """
+
     1. Robot goes to the first start position
     2. moves down
     3. draws the first line
     4. moves up
     Repeat 1-4
-    """
+
 
     sendmessage(moveToStart) 
     received_message()
@@ -463,4 +455,5 @@ for i in range(numberOfLines):
     received_message()
     sendmessage(moveup)
     received_message()
-    
+
+"""

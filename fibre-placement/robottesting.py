@@ -1,4 +1,4 @@
-from ultralytics import YOLO
+
 import cv2
 import cvzone
 import math
@@ -7,7 +7,7 @@ from scipy.optimize import fsolve
 import socket
 import numpy as np
 import matplotlib.pyplot as plt
-
+"""
 # Global variables for calibration
 click_count = 0
 click_coordinates = []
@@ -35,10 +35,8 @@ if not ret:
     cap.release()
     exit()
 
-
-
 print(click_coordinates)  # the points displayed represent the calibration points
-
+"""
 def forward_robot(x, *jtvecin):
     r, s = x
     rs = r * s
@@ -123,10 +121,6 @@ def map(r, s, rspts, xypts, jtpts):
     j = forward_robot(p, jtpts)
     return x, j
 
-
-fileName = input("Enter file name: ")
-coordinates, size = SortingCoordinates(fileName)
-
 """
 1 Starts at bottom left and goes around the corners, 
 5 is in the middle of the bottom side and goes around the sides,
@@ -163,15 +157,15 @@ ptvec = (
 
 # Actual Coordinates
 xyvec = (
-    [0, 0],
-    [404, 0],
-    [404, 404],
-    [0, 404],
-    [202, 0],
-    [404, 202],
-    [202, 404],
-    [0, 202],
-    [202, 202]
+    [0, 0],             #1
+    [107.95, 0],           #2
+    [215.9, 0],         #3
+    [215.9, 139.7],           #4
+    [215.9, 279.4],           #5
+    [107.95, 279.4],         #6
+    [0, 279.4],         #7
+    [0, 139.7],           #8
+    [202, 202] 
 )
 
 # Joint Angles
@@ -187,8 +181,20 @@ jtvec = (
     [89.76, -44.34, -97.32, 0, -39.27, -1.23]
 )
 
-coords = map(ptvec, xyvec, jtvec)
-print (coords)
+for point in ptvec:
+    coords = map(point[0],point[1], ptvec, xyvec, jtvec)
+    print(coords[0])
+    #x_min, y_min = coords[0][0]
+    #x_max, y_max = coords[4][0]
+
+    #print (x_min, y_min)
+    #print (x_max, y_max)
+    jtanglesStart = coords[1]
+    print (jtanglesStart)
+
+    
+
+
 
 
 """
@@ -207,13 +213,13 @@ def received_message():
     recieved_data = client_socket.recv(1024)
     print(recieved_data)
 
-"""
+
 Robot goes to the first start position
 moves down
 draws the first line
 moves up
 Repeat 1-4
-"""
+
 
 moveToStart = [b"moveto", jtanglesStart]
 moveToEnd = [b"moveto", jtanglesEnd]
