@@ -155,8 +155,8 @@ jtvec = (
 
 # Assigning the coordinates to the paper_coordinates dictionary
 paper_coordinates = {
-    'bottom_left': (0, 0),
-    'bottom_right': (215.9, 0),
+    'bottom_left': (215.9, 0),
+    'bottom_right': (0, 0),
     'top_left':  (215.9, 279.4),
     'top_right': (0, 279.4)
 }
@@ -319,25 +319,16 @@ def generate_fiber_paths(angle_repetitions, spacing=30):
         for _ in range(repetitions):
             paths.extend(generate_path_lines(angle, spacing))
     
-    print ("Paths", paths)
     return paths
 
 # Function to plot the paths
-def plot_fiber_paths(paths):
+def placeFiber(paths):
     """
     Plot the fiber paths on the paper.
     """
-    """
-    for edge in paper_edges:
-        start, end = edge
-        ax.plot([start[0], end[0]], [start[1], end[1]], 'k-')
-    """
-    """
-    # Plot the fiber paths
-    for path in paths:
-        start, end = path
-        ax.plot([start[0], end[0]], [start[1], end[1]], 'b-')
-    """
+    startxy = []
+    endxy = []
+    
     # Plot the fiber paths
     for i, path in enumerate(paths):
         start, end = path
@@ -347,32 +338,37 @@ def plot_fiber_paths(paths):
         else:
             color = 'b-'
 
-        ax.plot([start[0],end[0]], [start[1],end[1]], color)
-        print ("path", start, end)
+        startxy.append(start)
+        endxy.append(end)
+
+        print("path", start, end)
+
+    return startxy, endxy
 
 
 # Example usage
-angle_repetitions = [(0, 1), (20, 1), (160, 1), (90, 1)]
+angle_repetitions = [(0, 1), (45, 1), (135, 1), (90, 1)]
 spacing = 30
 fiber_paths = generate_fiber_paths(angle_repetitions, spacing)
 
+startxy, endxy = placeFiber(fiber_paths)
+
 numberOfLines = len(fiber_paths)
-print("number of lines", numberOfLines)
 
-# Plot the generated paths
-plot_fiber_paths(fiber_paths)
+startjtvec = []
+endxyvec = []
+endjtvec = [] 
 
-"""
-    bcvec = []  #bvec Start Coordinates
-    startxyvec = [] #starting coordinates
-    finaljtvec = []  # Final Joint Angles
-    finalxyvec = []  # Final XY Coordinates
-    numberOfLines = len(pathCoordinates())
-    intomm = 25.4
-    print (numberOfLines)
-"""
+for point in startxy:
+    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
+    startjtvec.append([round(num, 2) for num in j])
 
-"""
+for point in endxy:
+    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
+    endxyvec.append([round(num, 2) for num in x])
+    endjtvec.append([round(num, 2) for num in j])
+
+
 #server is opened which connects directly to the robot 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = "192.168.137.50"
@@ -430,21 +426,25 @@ def sendmessage(message):
     return 0
 
 
+x_coords = [coord[0] for coord in endxyvec]
+y_coords = [coord[1] for coord in endxyvec]
+
 
 sendmessage(closeGripper)
 received_message()
 
 for i in range(numberOfLines):
 
-    moveToStart = [b'moveto', finalbcvec[i]]          
-    moveToEnd = [b'moveto', finaljtvec[i]]
+    moveToStart = [b'moveto', startjtvec[i]]          
+    moveToEnd = [b'moveto', endjtvec[i]]
 
-
+    """"
     1. Robot goes to the first start position
     2. moves down
     3. draws the first line
     4. moves up
     Repeat 1-4
+    """
 
 
     sendmessage(moveToStart) 
@@ -456,4 +456,3 @@ for i in range(numberOfLines):
     sendmessage(moveup)
     received_message()
 
-"""

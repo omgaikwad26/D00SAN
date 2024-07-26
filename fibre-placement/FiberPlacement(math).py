@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 
 # Assigning the coordinates to the paper_coordinates dictionary
 paper_coordinates = {
-    'bottom_left': (0, 0),
-    'bottom_right': (215.9, 0),
+    'bottom_left': (215.9, 0),
+    'bottom_right': (0, 0),
     'top_left':  (215.9, 279.4),
     'top_right': (0, 279.4)
 }
@@ -179,7 +179,7 @@ def generate_fiber_paths(angle_repetitions, spacing=30):
     return paths
 
 # Function to plot the paths
-def plot_fiber_paths(paths):
+def placeFiber(paths):
     """
     Plot the fiber paths on the paper.
     """
@@ -237,4 +237,4 @@ numberOfLines = len(fiber_paths)
 print("number of lines", numberOfLines)
 
 # Plot the generated paths
-plot_fiber_paths(fiber_paths)
+placeFiber(fiber_paths)
