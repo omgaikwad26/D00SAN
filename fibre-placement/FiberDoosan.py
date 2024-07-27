@@ -368,7 +368,7 @@ for point in endxy:
     endxyvec.append([round(num, 2) for num in x])
     endjtvec.append([round(num, 2) for num in j])
 
-
+"""
 #server is opened which connects directly to the robot 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = "192.168.137.50"
@@ -438,13 +438,13 @@ for i in range(numberOfLines):
     moveToStart = [b'moveto', startjtvec[i]]          
     moveToEnd = [b'moveto', endjtvec[i]]
 
-    """"
+
     1. Robot goes to the first start position
     2. moves down
     3. draws the first line
     4. moves up
     Repeat 1-4
-    """
+
 
 
     sendmessage(moveToStart) 
@@ -455,4 +455,4 @@ for i in range(numberOfLines):
     received_message()
     sendmessage(moveup)
     received_message()
-
+"""

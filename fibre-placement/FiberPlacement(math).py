@@ -1,13 +1,159 @@
-#from ultralytics import YOLO
-import cv2
-import cvzone
-import math
-import time
+import struct
+import os
+import numpy as np
+#import open3d as o3d
 from scipy.optimize import fsolve
+import time
 import socket
 import numpy as np
 import matplotlib.pyplot as plt
 
+# inverts the lagrange numerically
+
+
+def forward_robot(x, *jtvecin):
+    r, s = x
+    rs = r * s
+    jtvec = jtvecin[0]
+    n1 = .25 * rs * (1-r) * (1-s)
+    n2 = -.25 * rs * (1+r) * (1-s)
+    n3 = .25 * rs * (1+r) * (1+s)
+    n4 = -.25 * rs * (1-r) * (1+s)
+    n5 = -.5 * (1-(r*r)) * s * (1-s)
+    n6 = .5 * (1+r) * r * (1-(s*s))           #functions to get multiplication factor for rs and xy values
+    n7 = .5 * (1-(r*r)) * s * (1+s)
+    n8 = -.5 * (1-r) * r * (1-(s*s))
+    n9 = (1-(r*r)) * (1-(s*s))
+    jt1val = (jtvec[0][0] * n1 + jtvec[1][0] * n2 + jtvec[2][0] * n3 + jtvec[3][0] * n4
+              + jtvec[4][0] * n5 + jtvec[5][0] * n6 + jtvec[6][0] * n7 + jtvec[7][0] * n8 + jtvec[8][0] * n9)
+    jt2val = (jtvec[0][1] * n1 + jtvec[1][1] * n2 + jtvec[2][1] * n3 + jtvec[3][1] * n4
+              + jtvec[4][1] * n5 + jtvec[5][1] * n6 + jtvec[6][1] * n7 + jtvec[7][1] * n8 + jtvec[8][1] * n9)
+    jt3val = (jtvec[0][2] * n1 + jtvec[1][2] * n2 + jtvec[2][2] * n3 + jtvec[3][2] * n4
+              + jtvec[4][2] * n5 + jtvec[5][2] * n6 + jtvec[6][2] * n7 + jtvec[7][2] * n8 + jtvec[8][2] * n9)
+    jt4val = (jtvec[0][3] * n1 + jtvec[1][3] * n2 + jtvec[2][3] * n3 + jtvec[3][3] * n4
+              + jtvec[4][3] * n5 + jtvec[5][3] * n6 + jtvec[6][3] * n7 + jtvec[7][3] * n8 + jtvec[8][3] * n9)
+    jt5val = (jtvec[0][4] * n1 + jtvec[1][4] * n2 + jtvec[2][4] * n3 + jtvec[3][4] * n4
+              + jtvec[4][4] * n5 + jtvec[5][4] * n6 + jtvec[6][4] * n7 + jtvec[7][4] * n8 + jtvec[8][4] * n9)
+    jt6val = (jtvec[0][5] * n1 + jtvec[1][5] * n2 + jtvec[2][5] * n3 + jtvec[3][5] * n4
+              + jtvec[4][5] * n5 + jtvec[5][5] * n6 + jtvec[6][5] * n7 + jtvec[7][5] * n8 + jtvec[8][5] * n9)  # Each joint angle calculation
+    return [jt1val, jt2val, jt3val, jt4val, jt5val, jt6val]
+
+
+def forwardlin(x, *ptvecin):
+    # forward lagrange interpolation
+    p, q = x
+    ptvec = ptvecin[0]
+    n1 = 0.25 * (1 - p) * (1 - q)
+    n2 = 0.25 * (1 + p) * (1 - q)
+    n3 = 0.25 * (1 + p) * (1 + q)
+    n4 = 0.25 * (1 - p) * (1 + q)
+    val1 = ptvec[0][0] * n1 + ptvec[1][0] * n2 + ptvec[2][0] * n3 + ptvec[3][0] * n4
+    val2 = ptvec[0][1] * n1 + ptvec[1][1] * n2 + ptvec[2][1] * n3 + ptvec[3][1] * n4
+    #print(p,q,val1,val2)
+    return [val1, val2]
+
+def forwardquad(x, *ptvecin):
+    # forward lagrange interpolation
+    r, s = x
+    rs = r * s
+    ptvec = ptvecin[0]
+    n1 = .25 * rs * (1-r) * (1-s)
+    n2 = -.25 * rs * (1+r) * (1-s)
+    n3 = .25 * rs * (1+r) * (1+s)
+    n4 = -.25 * rs * (1-r) * (1+s)
+    n5 = -.5 * (1-(r*r)) * s * (1-s)
+    n6 = .5 * (1+r) * r * (1-(s*s))
+    n7 = .5 * (1-(r*r)) * s * (1+s)
+    n8 = -.5 * (1-r) * r * (1-(s*s))
+    n9 = (1-(r*r)) * (1-(s*s))
+    val1 = (ptvec[0][0] * n1 + ptvec[1][0] * n2 + ptvec[2][0] * n3 + ptvec[3][0] * n4 + ptvec[4][0]
+            * n5 + ptvec[5][0] * n6 + ptvec[6][0] * n7 + ptvec[7][0] * n8 + ptvec[8][0] * n9)
+    val2 = (ptvec[0][1] * n1 + ptvec[1][1] * n2 + ptvec[2][1] * n3 + ptvec[3][1] * n4 + ptvec[4][1]
+            * n5 + ptvec[5][1] * n6 + ptvec[6][1] * n7 + ptvec[7][1] * n8 + ptvec[8][1] * n9)
+    return [val1, val2]
+
+
+def reverse_error(x, *args):
+    # error function for finding p,q roots
+    rs = args[0][0]
+    ptvec = args[0][1]
+    x1 = forwardquad(x, ptvec)
+    err = [(x1[0] - rs[0]) * (x1[0] - rs[0]), (x1[1] - rs[1]) * (x1[1] - rs[1])]
+    return err
+
+
+def reverse(r, s, *ptvec):
+    data = [[r, s], ptvec[0]]
+    x0 = [0.25, 0.25]
+    p = fsolve(reverse_error, x0, data)
+    return p
+
+
+def map(r, s, rspts, xypts, jtpts):
+    p = reverse(r, s, rspts)
+    x = forwardquad(p, xypts)
+    j = forward_robot(p, jtpts)
+    return x, j
+
+"""
+1 Starts at bottom left and goes around the corners, 
+5 is in the middle of the bottom side and goes around the sides,
+9 is center
+Coordinates are in millimeters
+"""
+"""
+Paper Coordinates
+pt 1: (685, 210)
+pt 2:
+pt 3: 
+pt 4: 
+pt 5: 
+pt 6: 
+pt 7: 
+pt 8: 
+pt 9:  
+
+
+"""
+#Mapping Coordinates in mm
+#ptvec = [[a,b] for a, b in click_coordinates]
+ptvec = (
+    [0, 0],             #1
+    [107.95, 0],           #2
+    [215.9, 0],         #3
+    [215.9, 139.7],           #4
+    [215.9, 279.4],           #5
+    [107.95, 279.4],         #6
+    [0, 279.4],         #7
+    [0, 139.7],           #8
+    [202, 202]          #9
+)
+
+# Actual Coordinates
+xyvec = (
+    [0, 0],             #1
+    [107.95, 0],           #2
+    [215.9, 0],         #3
+    [215.9, 139.7],           #4
+    [215.9, 279.4],           #5
+    [107.95, 279.4],         #6
+    [0, 279.4],         #7
+    [0, 139.7],           #8
+    [202, 202] 
+)
+
+# Joint Angles
+jtvec = (
+    [81.94, -37.56, -114.07, 0, -25.4, 0],
+    [90.07,-39.18,-111.22,0,-32.17,0.77],
+    [97.52, -38.03, -113.77, 0, -25.61, 8.96],
+    [96.46, -44.26, -98.66, 0, -36.43, 6.63],
+    [95.72, -50.83, -82.93, 0, -44.40, 8.96],
+    [90.29, -51.16, -83.04, 0, -44.48, 6.63],
+    [84.09, -51.30, -82.66, 0,-44.40,-6.42],
+    [83.02, -46.13, -93.33, 0, -44.39, -6.42],
+    [89.76, -44.34, -97.32, 0, -39.27, -1.23]
+)
 
 # Assigning the coordinates to the paper_coordinates dictionary
 paper_coordinates = {
@@ -235,6 +381,25 @@ fiber_paths = generate_fiber_paths(angle_repetitions, spacing)
 
 numberOfLines = len(fiber_paths)
 print("number of lines", numberOfLines)
+startxy, endxy = placeFiber(fiber_paths)
 
-# Plot the generated paths
-placeFiber(fiber_paths)
+numberOfLines = len(fiber_paths)
+
+startjtvec = []
+endxyvec = []
+endjtvec = [] 
+
+for point in startxy:
+    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
+    startjtvec.append([round(num, 2) for num in j])
+
+for point in endxy:
+    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
+    endxyvec.append([round(num, 2) for num in x])
+    endjtvec.append([round(num, 2) for num in j])
+
+for i in range(numberOfLines):
+
+    print (startjtvec[i], endjtvec[i])
+
+
