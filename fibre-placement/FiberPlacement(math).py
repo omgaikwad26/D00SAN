@@ -6,7 +6,7 @@ from scipy.optimize import fsolve
 import time
 import socket
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
 # inverts the lagrange numerically
 
@@ -321,7 +321,6 @@ def generate_fiber_paths(angle_repetitions, spacing=30):
         for _ in range(repetitions):
             paths.extend(generate_path_lines(angle, spacing))
     
-    print ("Paths", paths)
     return paths
 
 # Function to plot the paths
@@ -400,6 +399,6 @@ for point in endxy:
 
 for i in range(numberOfLines):
 
-    print (startjtvec[i], endjtvec[i])
+    print ("final lines", startjtvec[i], endjtvec[i])
 
 

@@ -368,24 +368,23 @@ for point in endxy:
     endxyvec.append([round(num, 2) for num in x])
     endjtvec.append([round(num, 2) for num in j])
 
-"""
+
 #server is opened which connects directly to the robot 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = "192.168.137.50"
 port = 8085
 server_socket.bind((host, port))
-
 server_socket.listen(5)
 client_socket, addr = server_socket.accept()
 
 def received_message():
-    recieved_data = client_socket.recv(1024)
-    print(recieved_data)
+    received_data = client_socket.recv(1024)
+    print(received_data)
 
 closeGripper = b"close gripper"
 openGripper = b"open gripper"
-moveupvar = b"40" #move up variable
-movedownvar= b"-25" #move down variable
+moveupvar = b"40"  # move up variable
+movedownvar = b"-25"  # move down variable
 moveup = [b"moveup", moveupvar]
 movedown = [b"movedown", movedownvar]
 rotatevar = b"90"
@@ -397,13 +396,11 @@ def sendmessage(message):
     if message[0] == b'moveto':
         client_socket.send(message[0])
         time.sleep(0.7)
-        #received_message() # Small delay to ensure separation
         
         for jtangles in message[1]:
             time.sleep(0.7)
             client_socket.send(bytes(str(jtangles), 'utf-8'))
             time.sleep(0.7)
-            #received_message() # Small delay to ensure separation
         client_socket.send(b'end')
         time.sleep(0.7)
     elif message[0] == b'moveup' or message[0] == b'movedown':
@@ -412,12 +409,14 @@ def sendmessage(message):
         client_socket.send(message[1])
         time.sleep(0.7)
         client_socket.send(b'end')
+        time.sleep(0.7)
     elif message[0] == b'rotate gripper':
         client_socket.send(message[0])
-        time.sleep(.7)
+        time.sleep(0.7)
         client_socket.send(message[1])
-        time.sleep(.7)
+        time.sleep(0.7)
         client_socket.send(b'end')
+        time.sleep(0.7)
     else:
         client_socket.send(message)
         time.sleep(0.7)
@@ -425,29 +424,28 @@ def sendmessage(message):
         time.sleep(0.7)
     return 0
 
+# Assume startjtvec and endxyvec are already defined with the required coordinates
+# Assume numberOfLines is defined
 
 x_coords = [coord[0] for coord in endxyvec]
 y_coords = [coord[1] for coord in endxyvec]
-
 
 sendmessage(closeGripper)
 received_message()
 
 for i in range(numberOfLines):
-
     moveToStart = [b'moveto', startjtvec[i]]          
-    moveToEnd = [b'moveto', endjtvec[i]]
+    moveToEnd = [b'moveto', endxyvec[i]]
 
-
+    """
     1. Robot goes to the first start position
     2. moves down
     3. draws the first line
     4. moves up
     Repeat 1-4
+    """
 
-
-
-    sendmessage(moveToStart) 
+    sendmessage(moveToStart)
     received_message()
     sendmessage(movedown)
     received_message()
@@ -455,4 +453,3 @@ for i in range(numberOfLines):
     received_message()
     sendmessage(moveup)
     received_message()
-"""
