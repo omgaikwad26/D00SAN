@@ -116,41 +116,55 @@ pt 9:
 #Mapping Coordinates in mm
 #ptvec = [[a,b] for a, b in click_coordinates]
 ptvec = (
-    [0, 0],             #1
-    [107.95, 0],           #2
-    [215.9, 0],         #3
-    [215.9, 139.7],           #4
-    [215.9, 279.4],           #5
-    [107.95, 279.4],         #6
-    [0, 279.4],         #7
-    [0, 139.7],           #8
-    [202, 202]          #9
+    [0, 279.4],  
+    [215.9, 279.4],
+    [215.9, 0],
+    [0, 0], 
+    [107.95, 279.4],
+    [215.9, 139.7],
+    [107.95, 0],
+    [0, 139.7],           
+    [202, 202]  
 )
+    
+"""
+[0, 0],             #1
+[107.95, 0],           #2
+[215.9, 0],         #3
+[215.9, 139.7],           #4
+[215.9, 279.4],           #5
+[107.95, 279.4],         #6
+[0, 279.4],         #7
+[0, 139.7],           #8
+[202, 202]         
+"""
+
 
 # Actual Coordinates
 xyvec = (
-    [0, 0],             #1
-    [107.95, 0],           #2
-    [215.9, 0],         #3
-    [215.9, 139.7],           #4
-    [215.9, 279.4],           #5
-    [107.95, 279.4],         #6
-    [0, 279.4],         #7
-    [0, 139.7],           #8
-    [202, 202] 
+    [0, 279.4],  
+    [215.9, 279.4],
+    [215.9, 0],
+    [0, 0], 
+    [107.95, 279.4],
+    [215.9, 139.7],
+    [107.95, 0],
+    [0, 139.7],           
+    [202, 202]
 )
 
 # Joint Angles
 jtvec = (
-    [81.94, -37.56, -114.07, 0, -25.4, 0],
-    [90.07,-39.18,-111.22,0,-32.17,0.77],
-    [97.52, -38.03, -113.77, 0, -25.61, 8.96],
-    [96.46, -44.26, -98.66, 0, -36.43, 6.63],
-    [95.72, -50.83, -82.93, 0, -44.40, 8.96],
-    [90.29, -51.16, -83.04, 0, -44.48, 6.63],
-    [84.09, -51.30, -82.66, 0,-44.40,-6.42],
-    [83.02, -46.13, -93.33, 0, -44.39, -6.42],
-    [89.76, -44.34, -97.32, 0, -39.27, -1.23]
+
+    [84.12, -51.37, -80.87, 0,-47.50,-6.42],
+    [95.80, -50.37, -82.99, 0, -44.40, 8.96],
+    [97.94, -37.25, -113.24, 0, -28.37, 8.96],
+    [82.17, -37.53, -112.57, 0, -29.09, 8.96],
+    [90.43, -50.39, -83.07, 0, -45.18, 6.63],
+    [96.63, -43.64, -98.15, 0, -37.94, 6.63],
+    [90.02, -37.80, -111.50, 0, -32.80, -2.58],
+    [83.16, -45.00, -95.23, 0, -42.03, -6.42],
+    [90.02, -44.10, -97.28, 0, -40.24, -6.42]
 )
 
 # Assigning the coordinates to the paper_coordinates dictionary
@@ -331,17 +345,18 @@ def placeFiber(paths):
     
     # Plot the fiber paths
     for i, path in enumerate(paths):
+
         start, end = path
+
         if i % 2 != 0:
             start, end = end, start
             color = 'g-'
         else:
             color = 'b-'
 
+        #print("path line:", i, start, end)
         startxy.append(start)
         endxy.append(end)
-
-        print("path", start, end)
 
     return startxy, endxy
 
@@ -351,23 +366,13 @@ angle_repetitions = [(0, 1), (45, 1), (135, 1), (90, 1)]
 spacing = 30
 fiber_paths = generate_fiber_paths(angle_repetitions, spacing)
 
-startxy, endxy = placeFiber(fiber_paths)
-
 numberOfLines = len(fiber_paths)
 
 startjtvec = []
 endxyvec = []
 endjtvec = [] 
 
-for point in startxy:
-    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
-    startjtvec.append([round(num, 2) for num in j])
-
-for point in endxy:
-    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
-    endxyvec.append([round(num, 2) for num in x])
-    endjtvec.append([round(num, 2) for num in j])
-
+startxy, endxy = placeFiber(fiber_paths)
 
 #server is opened which connects directly to the robot 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -425,17 +430,32 @@ def sendmessage(message):
     return 0
 
 # Assume startjtvec and endxyvec are already defined with the required coordinates
-# Assume numberOfLines is defined
-
-x_coords = [coord[0] for coord in endxyvec]
-y_coords = [coord[1] for coord in endxyvec]
+# Assume numberOfLines is define
 
 sendmessage(closeGripper)
 received_message()
 
+for point in startxy:
+    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
+    startjtvec.append([round(num, 2) for num in j])
+
+for point in endxy:
+    x, j = map(point[0], point[1], ptvec, xyvec, jtvec)
+    endxyvec.append([round(num, 2) for num in x])
+    endjtvec.append([round(num, 2) for num in j])
+
+ 
+
+# Print the final lines
 for i in range(numberOfLines):
+
+    try:
+        print("final lines", i, startjtvec[i], endjtvec[i])
+    except IndexError as e:
+        print(f"IndexError at index {i}: {e}")
+
     moveToStart = [b'moveto', startjtvec[i]]          
-    moveToEnd = [b'moveto', endxyvec[i]]
+    moveToEnd = [b'moveto', endjtvec[i]]
 
     """
     1. Robot goes to the first start position
@@ -445,10 +465,10 @@ for i in range(numberOfLines):
     Repeat 1-4
     """
 
+    print ("startpoint for line:", i, startjtvec[i])
     sendmessage(moveToStart)
     received_message()
-    sendmessage(movedown)
-    received_message()
+    print ("endpoint for line:", i, endjtvec[i])
     sendmessage(moveToEnd)
     received_message()
     sendmessage(moveup)
